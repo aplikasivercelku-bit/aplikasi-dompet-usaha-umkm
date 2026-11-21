@@ -36,23 +36,21 @@
         </div>
 
         <div>
-            <label for="admin-password-input" class="block text-xs font-bold text-gray-300 mb-1.5">Kata Sandi Admin</label>
-            <div class="relative flex items-center">
-              <input type="password" id="admin-password-input" autocomplete="current-password" placeholder="Masukkan kata sandi admin..." class="w-full pl-3.5 pr-11 py-2.5 rounded-xl bg-gray-950 border border-gray-700 text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none">
-              <button type="button" id="toggle-admin-password-btn" onclick="toggleAdminPasswordVisibility()" aria-label="Lihat atau sembunyikan kata sandi" title="Lihat / Sembunyikan kata sandi" class="absolute right-2.5 p-1.5 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-800/80 transition">
-                <!-- Ikon Mata Terbuka (saat kata sandi tersembunyi, klik untuk melihat) -->
-                <svg id="eye-icon-open" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                <!-- Ikon Mata Tertutup (saat kata sandi terlihat, klik untuk menyembunyikan) -->
-                <svg id="eye-icon-closed" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                </svg>
-              </button>
-            </div>
-            <p id="admin-password-error" class="hidden text-xs text-rose-400 font-semibold mt-1.5">Kata sandi salah. Silakan coba lagi.</p>
+          <label for="admin-password-input" class="block text-xs font-bold text-gray-300 mb-1.5">Kata Sandi Admin</label>
+          <div class="relative flex items-center">
+            <input type="password" id="admin-password-input" autocomplete="current-password" placeholder="Masukkan kata sandi admin..." class="w-full pl-3.5 pr-11 py-2.5 rounded-xl bg-gray-950 border border-gray-700 text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none">
+            <button type="button" id="toggle-admin-password-btn" onclick="toggleAdminPasswordVisibility()" aria-label="Lihat atau sembunyikan kata sandi" title="Lihat / Sembunyikan kata sandi" class="absolute right-2.5 p-1.5 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-800/80 transition">
+              <svg id="eye-icon-open" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <svg id="eye-icon-closed" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              </svg>
+            </button>
           </div>
+          <p id="admin-password-error" class="hidden text-xs text-rose-400 font-semibold mt-1.5">Kata sandi salah. Silakan coba lagi.</p>
+        </div>
 
         <div class="flex items-center justify-end gap-2.5 pt-2">
           <button type="button" onclick="closeAdminPasswordModal()" class="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs sm:text-sm font-bold transition">
@@ -68,7 +66,6 @@
 
   <!-- HALAMAN PEMBELI -->
   <div id="customer-view" class="min-h-screen flex flex-col">
-    <!-- Top Header: Di HP tombol berada di baris bawah judul agar judul jelas & tidak sejajar menyamping -->
     <header class="sticky top-0 z-30 bg-gray-950/90 backdrop-blur-xl border-b border-white/10">
       <div class="max-w-6xl mx-auto px-3.5 sm:px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3">
         <div class="flex items-center gap-3 w-full sm:w-auto min-w-0">
@@ -83,7 +80,6 @@
           </div>
         </div>
 
-        <!-- Baris Tombol Kelola Admin & Keranjang -->
         <div id="customer-header-actions" class="flex items-center gap-2.5 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/10">
           <button type="button" onclick="openAdminPasswordModal('panel')" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-2xl bg-gray-900 hover:bg-gray-800 text-amber-300 border border-amber-500/30 font-bold text-xs sm:text-sm transition text-center">
             Kelola Admin
@@ -100,7 +96,6 @@
       </div>
     </header>
 
-    <!-- Hero Banner & Filter Kategori (tanpa memotong dropdown di bawah) -->
     <section class="max-w-6xl w-full mx-auto px-3.5 sm:px-4 pt-4 sm:pt-5 relative z-20">
       <div class="relative rounded-3xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-gray-900 border border-amber-500/20 p-4 sm:p-7 visible">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -116,7 +111,6 @@
             </p>
           </div>
 
-          <!-- Dropdown & Ringkasan Kategori -->
           <div class="flex flex-wrap items-center gap-2.5 self-start md:self-center">
             <div class="relative z-40">
               <button type="button" id="cust-cat-dropdown-btn" onclick="toggleCategoryDropdown()" class="px-4 py-2.5 rounded-2xl bg-gray-950 hover:bg-gray-900 text-white border border-amber-500/30 text-xs sm:text-sm font-bold flex items-center gap-2.5 shadow-lg transition">
@@ -129,37 +123,7 @@
                 </svg>
               </button>
 
-              <!-- Daftar opsi kategori dari Admin dirender & diperbarui otomatis oleh renderCustomerCategoryOptions() -->
-              <div id="cust-cat-dropdown" class="hidden absolute left-0 md:right-0 md:left-auto mt-2 w-64 max-h-72 overflow-y-auto rounded-2xl bg-white text-gray-900 shadow-2xl border border-gray-200 py-1.5 z-50">
-                <button type="button" data-cat="Semua" onclick="selectCustomerCategory('Semua')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between bg-blue-600 text-white font-semibold transition">
-                  <span>Semua Kategori</span>
-                  <span id="cat-count-Semua" class="text-xs opacity-90 font-bold">0</span>
-                </button>
-                <button type="button" data-cat="Kopi" onclick="selectCustomerCategory('Kopi')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between hover:bg-gray-100 transition">
-                  <span>Kopi</span>
-                  <span id="cat-count-Kopi" class="text-xs opacity-75 font-bold">0</span>
-                </button>
-                <button type="button" data-cat="Non-Kopi" onclick="selectCustomerCategory('Non-Kopi')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between hover:bg-gray-100 transition">
-                  <span>Non-Kopi</span>
-                  <span id="cat-count-Non-Kopi" class="text-xs opacity-75 font-bold">0</span>
-                </button>
-                <button type="button" data-cat="Makanan Berat" onclick="selectCustomerCategory('Makanan Berat')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between hover:bg-gray-100 transition">
-                  <span>Makanan Berat</span>
-                  <span id="cat-count-Makanan Berat" class="text-xs opacity-75 font-bold">0</span>
-                </button>
-                <button type="button" data-cat="Camilan" onclick="selectCustomerCategory('Camilan')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between hover:bg-gray-100 transition">
-                  <span>Camilan</span>
-                  <span id="cat-count-Camilan" class="text-xs opacity-75 font-bold">0</span>
-                </button>
-                <button type="button" data-cat="Bakaran" onclick="selectCustomerCategory('Bakaran')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between hover:bg-gray-100 transition">
-                  <span>Bakaran</span>
-                  <span id="cat-count-Bakaran" class="text-xs opacity-75 font-bold">0</span>
-                </button>
-                <button type="button" data-cat="Kue & Dessert" onclick="selectCustomerCategory('Kue & Dessert')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between hover:bg-gray-100 transition">
-                  <span>Kue & Dessert</span>
-                  <span id="cat-count-Kue & Dessert" class="text-xs opacity-75 font-bold">0</span>
-                </button>
-              </div>
+              <div id="cust-cat-dropdown" class="hidden absolute left-0 md:right-0 md:left-auto mt-2 w-64 max-h-72 overflow-y-auto rounded-2xl bg-white text-gray-900 shadow-2xl border border-gray-200 py-1.5 z-50"></div>
             </div>
 
             <div class="px-3.5 py-2.5 rounded-2xl bg-gray-950/70 border border-white/10 text-xs font-semibold text-gray-300">
@@ -168,20 +132,10 @@
           </div>
         </div>
 
-        <!-- Quick Category Pills (disinkronkan otomatis dengan opsi kategori admin) -->
-        <div id="cust-category-pills" class="mt-4 pt-3.5 border-t border-white/10 flex items-center gap-2 overflow-x-auto pb-1">
-          <button type="button" data-pill="Semua" onclick="selectCustomerCategory('Semua')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-amber-500 text-gray-950 shadow-md shadow-amber-500/20">Semua</button>
-          <button type="button" data-pill="Kopi" onclick="selectCustomerCategory('Kopi')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-gray-950/80 text-gray-300 border border-white/10 hover:border-amber-400/40">Kopi</button>
-          <button type="button" data-pill="Non-Kopi" onclick="selectCustomerCategory('Non-Kopi')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-gray-950/80 text-gray-300 border border-white/10 hover:border-amber-400/40">Non-Kopi</button>
-          <button type="button" data-pill="Makanan Berat" onclick="selectCustomerCategory('Makanan Berat')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-gray-950/80 text-gray-300 border border-white/10 hover:border-amber-400/40">Makanan Berat</button>
-          <button type="button" data-pill="Camilan" onclick="selectCustomerCategory('Camilan')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-gray-950/80 text-gray-300 border border-white/10 hover:border-amber-400/40">Camilan</button>
-          <button type="button" data-pill="Bakaran" onclick="selectCustomerCategory('Bakaran')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-gray-950/80 text-gray-300 border border-white/10 hover:border-amber-400/40">Bakaran</button>
-          <button type="button" data-pill="Kue & Dessert" onclick="selectCustomerCategory('Kue & Dessert')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-gray-950/80 text-gray-300 border border-white/10 hover:border-amber-400/40">Kue & Dessert</button>
-        </div>
+        <div id="cust-category-pills" class="mt-4 pt-3.5 border-t border-white/10 flex items-center gap-2 overflow-x-auto pb-1"></div>
       </div>
     </section>
 
-    <!-- Grid Daftar Produk Menu -->
     <main class="max-w-6xl w-full mx-auto px-3.5 sm:px-4 py-5 sm:py-6 flex-1 relative z-10">
       <div id="cust-menu-grid" class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5"></div>
     </main>
@@ -189,7 +143,6 @@
 
   <!-- HALAMAN ADMIN -->
   <div id="admin-view" class="hidden min-h-screen flex flex-col">
-    <!-- Top Header -->
     <header class="sticky top-0 z-30 bg-gray-950/90 backdrop-blur-md border-b border-gray-800">
       <div class="max-w-6xl mx-auto px-3.5 sm:px-4 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div class="flex items-center gap-3 w-full sm:w-auto min-w-0">
@@ -242,7 +195,6 @@
           </button>
         </div>
 
-        <!-- Navigasi 4 Bagian -->
         <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2.5 mb-6">
           <button type="button" onclick="switchAdminSection(1)" id="tab-sec-1" class="admin-tab-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 text-gray-950 border border-amber-400 transition">
             1. Pengaturan Toko
@@ -330,7 +282,6 @@
               </div>
             </div>
 
-            <!-- Upload / Konversi Foto via Sigmawire -->
             <div class="p-3.5 rounded-2xl bg-gray-900/90 border border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div class="flex items-center gap-3 min-w-0">
                 <img id="menu-photo-preview" src="data:image/svg+xml;utf8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27120%27 height=%2790%27 viewBox=%270 0 120 90%27%3E%3Crect width=%27120%27 height=%2790%27 fill=%27%231f2937%27/%3E%3Ctext x=%2760%27 y=%2749%27 fill=%27%23fbbf24%27 font-size=%2712%27 font-family=%27sans-serif%27 text-anchor=%27middle%27%3EPreview Foto%3C/text%3E%3C/svg%3E" alt="Preview Foto Menu" class="w-16 h-12 rounded-xl object-cover border border-gray-700 bg-gray-950 shrink-0">
@@ -358,7 +309,6 @@
               </div>
             </div>
 
-            <!-- Tombol & Form Varian Opsional -->
             <div class="pt-1">
               <button type="button" id="btn-add-variant" onclick="enableVariantInput()" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-amber-400 border border-amber-500/30 text-xs font-bold transition">
                 Tambah Varian (Opsional)
@@ -450,10 +400,7 @@
       </div>
     </div>
 
-    <!-- KONTEN UTAMA ADMIN (TERPISAH PER HALAMAN TAB) -->
     <main id="admin-main-content" class="max-w-5xl w-full mx-auto px-3.5 sm:px-4 py-5 sm:py-6 flex-1 space-y-6">
-
-      <!-- HALAMAN 1: DAFTAR SEMUA MENU -->
       <section id="admin-page-menu" class="space-y-4">
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div class="relative flex-1">
@@ -475,7 +422,6 @@
         </div>
       </section>
 
-      <!-- HALAMAN 2: PESANAN MASUK DARI PEMBELI -->
       <section id="admin-page-orders" class="hidden space-y-4">
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div class="relative flex-1">
@@ -496,7 +442,6 @@
           <div id="admin-orders-list" class="space-y-3"></div>
         </div>
       </section>
-
     </main>
   </div>
 
@@ -539,7 +484,6 @@
           <p id="modal-prod-price" class="text-lg font-bold text-amber-400 mt-0.5"></p>
         </div>
 
-        <!-- Jumlah Pesanan -->
         <div class="flex items-center justify-between py-2 border-y border-gray-800">
           <span class="text-sm font-semibold text-gray-300">Jumlah Pesanan</span>
           <div class="flex items-center gap-3">
@@ -549,10 +493,8 @@
           </div>
         </div>
 
-        <!-- Pilihan Varian Dinamis -->
         <div id="modal-variants-container" class="space-y-3"></div>
 
-        <!-- Catatan Tambahan Opsional -->
         <div>
           <label for="modal-prod-note" class="block text-xs font-bold text-gray-300 mb-1.5">Catatan Tambahan (Opsional)</label>
           <input type="text" id="modal-prod-note" placeholder="Contoh: Es sedikit, kurang gula, level pedas 2..." class="w-full px-3.5 py-2.5 rounded-xl bg-gray-950 border border-gray-700 text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none">
@@ -579,10 +521,8 @@
       </div>
 
       <div class="p-5 overflow-y-auto space-y-5 flex-1">
-        <!-- Daftar Item Keranjang -->
         <div id="cart-items-list" class="space-y-2.5"></div>
 
-        <!-- Form Informasi Pemesan -->
         <div class="space-y-4 pt-2 border-t border-gray-800">
           <h4 class="text-xs font-extrabold uppercase tracking-wider text-amber-400">Informasi Pesanan</h4>
 
@@ -617,7 +557,6 @@
             </div>
           </div>
 
-          <!-- 3. Metode Pembayaran -->
           <div>
             <label class="block text-xs font-bold text-gray-300 mb-1.5">3. Metode Pembayaran *</label>
             <div class="grid grid-cols-2 gap-2.5">
@@ -630,7 +569,6 @@
             </div>
           </div>
 
-          <!-- Panel Bayar Tunai -->
           <div id="panel-pay-tunai" class="p-4 rounded-2xl bg-gray-950 border border-gray-800 space-y-3">
             <div class="flex items-center justify-between text-xs sm:text-sm">
               <span class="text-gray-400">Total Pembayaran:</span>
@@ -646,7 +584,6 @@
             </div>
           </div>
 
-          <!-- Panel QRIS / Transfer -->
           <div id="panel-pay-qris" class="hidden p-4 rounded-2xl bg-gray-950 border border-gray-800 space-y-3">
             <p id="qris-payment-text" class="text-xs text-gray-300 leading-relaxed whitespace-pre-line"></p>
             <div id="qris-image-wrapper" class="hidden flex flex-col items-center justify-center p-3 rounded-xl bg-white">
@@ -685,14 +622,13 @@
         </div>
       </div>
 
-      <!-- Footer Checkout -->
       <div class="p-4 bg-gray-950 border-t border-gray-800 space-y-3 shrink-0">
         <div class="flex items-center justify-between">
           <span class="text-sm font-bold text-gray-300">Total Pembayaran</span>
           <span id="cart-grand-total" class="text-xl font-extrabold text-amber-400">Rp 0</span>
         </div>
         <button type="button" id="btn-submit-wa" onclick="submitOrderToWhatsApp()" class="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition">
-          <span id="btn-submit-wa-text">Bagikan ke WhatsApp</span>
+          <span id="btn-submit-wa-text">4. Kirim ke WhatsApp</span>
         </button>
       </div>
     </div>
