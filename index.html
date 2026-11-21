@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Menu & Pemesanan Pembeli - Aplikasi Kuliner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen antialiased selection:bg-amber-500 selection:text-gray-950">
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast-banner hidden">
+    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+    </svg>
+    <span id="toast-text">Berhasil ditambahkan</span>
+  </div>
+
+  <!-- MODAL KATA SANDI ADMIN -->
+  <div id="admin-password-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4" onclick="if(event.target===this)closeAdminPasswordModal()">
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl max-w-md w-full overflow-hidden shadow-2xl">
+      <div class="px-5 py-4 border-b border-gray-800 flex items-center justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-extrabold text-white">Akses Kelola Admin</h3>
+          <p class="text-xs text-amber-400 font-medium mt-0.5">Masukkan kata sandi khusus admin toko</p>
+        </div>
+        <button type="button" onclick="closeAdminPasswordModal()" class="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold flex items-center justify-center">✕</button>
+      </div>
+
+      <form onsubmit="submitAdminPassword(event)" class="p-5 space-y-4">
+        <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 leading-relaxed">
+          Untuk client/pembeli tidak bisa memasuki password ini karena ini dibuat oleh admin toko.
+        </div>
+
+        <div>
+            <label for="admin-password-input" class="block text-xs font-bold text-gray-300 mb-1.5">Kata Sandi Admin</label>
+            <div class="relative flex items-center">
+              <input type="password" id="admin-password-input" autocomplete="current-password" placeholder="Masukkan kata sandi admin..." class="w-full pl-3.5 pr-11 py-2.5 rounded-xl bg-gray-950 border border-gray-700 text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none">
+              <button type="button" id="toggle-admin-password-btn" onclick="toggleAdminPasswordVisibility()" aria-label="Lihat atau sembunyikan kata sandi" title="Lihat / Sembunyikan kata sandi" class="absolute right-2.5 p-1.5 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-800/80 transition">
+                <!-- Ikon Mata Terbuka (saat kata sandi tersembunyi, klik untuk melihat) -->
+                <svg id="eye-icon-open" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <!-- Ikon Mata Tertutup (saat kata sandi terlihat, klik untuk menyembunyikan) -->
+                <svg id="eye-icon-closed" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                </svg>
+              </button>
+            </div>
+            <p id="admin-password-error" class="hidden text-xs text-rose-400 font-semibold mt-1.5">Kata sandi salah. Silakan coba lagi.</p>
+          </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button type="button" onclick="closeAdminPasswordModal()" class="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs sm:text-sm font-bold transition">
+            Batal
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 text-xs sm:text-sm font-extrabold transition shadow-lg shadow-amber-500/20">
+            Masuk Admin
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- HALAMAN PEMBELI -->
+  <div id="customer-view" class="min-h-screen flex flex-col">
+    <!-- Top Header: Di HP tombol berada di baris bawah judul agar judul jelas & tidak sejajar menyamping -->
+    <header class="sticky top-0 z-30 bg-gray-950/90 backdrop-blur-xl border-b border-white/10">
+      <div class="max-w-6xl mx-auto px-3.5 sm:px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3">
+        <div class="flex items-center gap-3 w-full sm:w-auto min-w-0">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-gray-950 font-extrabold flex items-center justify-center text-base shadow-lg shadow-amber-500/20 shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h1 id="cust-store-name" class="text-base sm:text-xl font-extrabold tracking-tight text-white leading-snug break-words">Toko Kuliner</h1>
+            <p id="cust-current-date" class="text-xs text-amber-300/90 font-medium leading-snug"></p>
+          </div>
+        </div>
+
+        <!-- Baris Tombol Kelola Admin & Keranjang -->
+        <div id="customer-header-actions" class="flex items-center gap-2.5 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/10">
+          <button type="button" onclick="openAdminPasswordModal('panel')" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-2xl bg-gray-900 hover:bg-gray-800 text-amber-300 border border-amber-500/30 font-bold text-xs sm:text-sm transition text-center">
+            Kelola Admin
+          </button>
+
+          <button type="button" onclick="openCartModal()" class="flex-1 sm:flex-initial relative px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 transition shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span>Keranjang</span>
+            <span id="cart-badge-count" class="px-2 py-0.5 rounded-full bg-gray-950 text-amber-400 text-xs font-extrabold">0</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Banner & Filter Kategori (tanpa memotong dropdown di bawah) -->
+    <section class="max-w-6xl w-full mx-auto px-3.5 sm:px-4 pt-4 sm:pt-5 relative z-20">
+      <div class="relative rounded-3xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-gray-900 border border-amber-500/20 p-4 sm:p-7 visible">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div class="space-y-1.5 max-w-xl">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/30 text-amber-300 text-[11px] font-bold uppercase tracking-wider">
+              Pesan Langsung ke WhatsApp
+            </span>
+            <h2 class="text-xl sm:text-3xl font-extrabold text-white tracking-tight leading-snug">
+              Pilih Menu Favoritmu Hari Ini
+            </h2>
+            <p class="text-xs sm:text-sm text-gray-300/90 leading-relaxed">
+              Ketuk menu untuk memilih varian, jumlah pesanan, atau catatan tambahan sebelum dikirim ke kasir.
+            </p>
+          </div>
+
+          <!-- Dropdown & Ringkasan Kategori -->
+          <div class="flex flex-wrap items-center gap-2.5 self-start md:self-center">
+            <div class="relative z-40">
+              <button type="button" id="cust-cat-dropdown-btn" onclick="toggleCategoryDropdown()" class="px-4 py-2.5 rounded-2xl bg-gray-950 hover:bg-gray-900 text-white border border-amber-500/30 text-xs sm:text-sm font-bold flex items-center gap-2.5 shadow-lg transition">
+                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h10M4 18h7" />
+                </svg>
+                <span id="cust-selected-cat-label">Kategori: Semua</span>
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <!-- Daftar opsi kategori dari Admin dirender & diperbarui otomatis oleh renderCustomerCategoryOptions() -->
+              <div id="cust-cat-dropdown" class="hidden absolute left-0 md:right-0 md:left-auto mt-2 w-64 max-h-72 overflow-y-auto rounded-2xl bg-white text-gray-900 shadow-2xl border border-gray-200 py-1.5 z-50">
+                <button type="button" data-cat="Semua" onclick="selectCustomerCategory('Semua')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between bg-blue-600 text-white font-semibold transition">
+                  <span>Semua Kategori</span>
+                  <span id="cat-count-Semua" class="text-xs opacity-90 font-bold">0</span>
+                </button>
+                <button type="button" data-cat="Kopi" onclick="selectCustomerCategory('Kopi')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between hover:bg-gray-100 transition">
+                  <span>Kopi</span>
+                  <span id="cat-count-Kopi" class="text-xs opacity-75 font-bold">0</span>
+                </button>
+                <button type="button" data-cat="Non-Kopi" onclick="selectCustomerCategory('Non-Kopi')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between hover:bg-gray-100 transition">
+                  <span>Non-Kopi</span>
+                  <span id="cat-count-Non-Kopi" class="text-xs opacity-75 font-bold">0</span>
+                </button>
+                <button type="button" data-cat="Makanan Berat" onclick="selectCustomerCategory('Makanan Berat')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between hover:bg-gray-100 transition">
+                  <span>Makanan Berat</span>
+                  <span id="cat-count-Makanan Berat" class="text-xs opacity-75 font-bold">0</span>
+                </button>
+                <button type="button" data-cat="Camilan" onclick="selectCustomerCategory('Camilan')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between hover:bg-gray-100 transition">
+                  <span>Camilan</span>
+                  <span id="cat-count-Camilan" class="text-xs opacity-75 font-bold">0</span>
+                </button>
+                <button type="button" data-cat="Bakaran" onclick="selectCustomerCategory('Bakaran')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between hover:bg-gray-100 transition">
+                  <span>Bakaran</span>
+                  <span id="cat-count-Bakaran" class="text-xs opacity-75 font-bold">0</span>
+                </button>
+                <button type="button" data-cat="Kue & Dessert" onclick="selectCustomerCategory('Kue & Dessert')" class="cat-option-item w-full px-4 py-2.5 text-left text-xs sm:text-sm flex items-center justify-between hover:bg-gray-100 transition">
+                  <span>Kue & Dessert</span>
+                  <span id="cat-count-Kue & Dessert" class="text-xs opacity-75 font-bold">0</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="px-3.5 py-2.5 rounded-2xl bg-gray-950/70 border border-white/10 text-xs font-semibold text-gray-300">
+              Total Menu: <span id="hero-menu-total" class="text-amber-400 font-extrabold">0 Item</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Category Pills (disinkronkan otomatis dengan opsi kategori admin) -->
+        <div id="cust-category-pills" class="mt-4 pt-3.5 border-t border-white/10 flex items-center gap-2 overflow-x-auto pb-1">
+          <button type="button" data-pill="Semua" onclick="selectCustomerCategory('Semua')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-amber-500 text-gray-950 shadow-md shadow-amber-500/20">Semua</button>
+          <button type="button" data-pill="Kopi" onclick="selectCustomerCategory('Kopi')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-gray-950/80 text-gray-300 border border-white/10 hover:border-amber-400/40">Kopi</button>
+          <button type="button" data-pill="Non-Kopi" onclick="selectCustomerCategory('Non-Kopi')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-gray-950/80 text-gray-300 border border-white/10 hover:border-amber-400/40">Non-Kopi</button>
+          <button type="button" data-pill="Makanan Berat" onclick="selectCustomerCategory('Makanan Berat')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-gray-950/80 text-gray-300 border border-white/10 hover:border-amber-400/40">Makanan Berat</button>
+          <button type="button" data-pill="Camilan" onclick="selectCustomerCategory('Camilan')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-gray-950/80 text-gray-300 border border-white/10 hover:border-amber-400/40">Camilan</button>
+          <button type="button" data-pill="Bakaran" onclick="selectCustomerCategory('Bakaran')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-gray-950/80 text-gray-300 border border-white/10 hover:border-amber-400/40">Bakaran</button>
+          <button type="button" data-pill="Kue & Dessert" onclick="selectCustomerCategory('Kue & Dessert')" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition bg-gray-950/80 text-gray-300 border border-white/10 hover:border-amber-400/40">Kue & Dessert</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Grid Daftar Produk Menu -->
+    <main class="max-w-6xl w-full mx-auto px-3.5 sm:px-4 py-5 sm:py-6 flex-1 relative z-10">
+      <div id="cust-menu-grid" class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5"></div>
+    </main>
+  </div>
+
+  <!-- HALAMAN ADMIN -->
+  <div id="admin-view" class="hidden min-h-screen flex flex-col">
+    <!-- Top Header -->
+    <header class="sticky top-0 z-30 bg-gray-950/90 backdrop-blur-md border-b border-gray-800">
+      <div class="max-w-6xl mx-auto px-3.5 sm:px-4 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div class="flex items-center gap-3 w-full sm:w-auto min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-amber-500 text-gray-950 font-extrabold flex items-center justify-center text-lg shadow-lg shadow-amber-500/20 shrink-0">
+            A
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h1 class="text-base sm:text-xl font-extrabold tracking-tight text-white">Panel Admin Kuliner</h1>
+              <span id="sync-badge" class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-medium">
+                Tersimpan Permanen
+              </span>
+            </div>
+            <p class="text-xs text-gray-400 break-all">ID Toko: <span id="header-store-id" class="font-mono text-amber-400">-</span></p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+          <button type="button" id="btn-nav-menu" onclick="switchAdminPageTab('menu')" class="flex-1 sm:flex-initial px-3 py-2 rounded-xl bg-amber-500 text-gray-950 text-xs sm:text-sm font-bold border border-amber-400 transition flex items-center justify-center gap-1.5">
+            <span>Daftar Semua Menu</span>
+          </button>
+
+          <button type="button" onclick="switchToCustomerView()" class="flex-1 sm:flex-initial px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white text-xs sm:text-sm font-semibold border border-gray-700 transition flex items-center justify-center gap-1.5">
+            <span>Halaman menu Pembeli</span>
+          </button>
+
+          <button type="button" id="btn-nav-orders" onclick="switchAdminPageTab('orders')" class="flex-1 sm:flex-initial relative px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-amber-300 text-xs sm:text-sm font-semibold border border-gray-700 transition flex items-center justify-center gap-1.5">
+            <span id="header-order-bell" class="hidden text-sm leading-none animate-bounce" title="Ada pesanan masuk baru">🔔</span>
+            <span>Pesanan Masuk</span>
+            <span id="header-order-badge" class="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-400 text-[11px] font-extrabold">0</span>
+          </button>
+
+          <button type="button" id="admin-drawer-toggle" onclick="toggleAdminDrawer()" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <span>Menu Pengaturan</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- DRAWER / PANEL PENGATURAN 4 BAGIAN -->
+    <div id="admin-settings-panel" class="hidden bg-gray-900/95 border-b border-gray-800 shadow-2xl">
+      <div class="max-w-6xl mx-auto px-3.5 sm:px-4 py-5 sm:py-6">
+        <div class="flex items-center justify-between mb-5 pb-3 border-b border-gray-800 gap-2">
+          <h2 class="text-sm sm:text-lg font-bold text-amber-400">Pengaturan Toko, Menu, Barcode & Data</h2>
+          <button type="button" onclick="toggleAdminDrawer()" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs text-gray-300 font-semibold shrink-0">
+            Tutup Panel
+          </button>
+        </div>
+
+        <!-- Navigasi 4 Bagian -->
+        <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2.5 mb-6">
+          <button type="button" onclick="switchAdminSection(1)" id="tab-sec-1" class="admin-tab-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 text-gray-950 border border-amber-400 transition">
+            1. Pengaturan Toko
+          </button>
+          <button type="button" onclick="switchAdminSection(2)" id="tab-sec-2" class="admin-tab-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700 transition">
+            2. Kelola Menu
+          </button>
+          <button type="button" onclick="switchAdminSection(3)" id="tab-sec-3" class="admin-tab-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700 transition">
+            3. Barcode & Link
+          </button>
+          <button type="button" onclick="switchAdminSection(4)" id="tab-sec-4" class="admin-tab-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700 transition">
+            4. Ekspor / Impor
+          </button>
+        </div>
+
+        <!-- BAGIAN 1: PENGATURAN TOKO & PEMBAYARAN -->
+        <div id="sec-1" class="admin-section space-y-4">
+          <div class="p-4 sm:p-5 rounded-2xl bg-gray-950/70 border border-gray-800 space-y-4">
+            <h3 class="text-sm sm:text-base font-bold text-white">Pengaturan Toko & Pembayaran</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="set-store-name" class="block text-xs font-semibold text-gray-300 mb-1.5">Nama Toko</label>
+                <input type="text" id="set-store-name" placeholder="Contoh: Kedai Kuliner Nusantara" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+              </div>
+              <div>
+                <label for="set-store-id" class="block text-xs font-semibold text-gray-300 mb-1.5">ID Toko (Bisa Diedit Langsung)</label>
+                <input type="text" id="set-store-id" placeholder="Contoh: KEDAI-NUSANTARA-01" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-amber-400 font-mono text-sm focus:border-amber-500 focus:outline-none">
+              </div>
+              <div>
+                <label for="set-wa-number" class="block text-xs font-semibold text-gray-300 mb-1.5">Nomor WhatsApp Penerima Pesanan</label>
+                <input type="text" id="set-wa-number" placeholder="Contoh: 087877611218 atau 6287877611218" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+              </div>
+              <div>
+                <label for="set-qris-url" class="block text-xs font-semibold text-gray-300 mb-1.5">URL Gambar QRIS (Opsional)</label>
+                <input type="text" id="set-qris-url" placeholder="https://contoh.com/qris-toko.png" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+              </div>
+            </div>
+            <div>
+              <label for="set-payment-info" class="block text-xs font-semibold text-gray-300 mb-1.5">Informasi Rekening / QRIS Pembayaran</label>
+              <textarea id="set-payment-info" rows="2" placeholder="Contoh: BCA 1234567890 a/n Budi Santoso atau Scan QRIS di bawah ini" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none"></textarea>
+            </div>
+            <div class="flex justify-end">
+              <button type="button" onclick="saveStoreSettings()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-bold text-sm transition">
+                Simpan Pengaturan Toko
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BAGIAN 2: KELOLA MENU -->
+        <div id="sec-2" class="admin-section hidden space-y-4">
+          <div class="p-4 sm:p-5 rounded-2xl bg-gray-950/70 border border-gray-800 space-y-4">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <h3 id="menu-form-title" class="text-sm sm:text-base font-bold text-white">Bagian 2 - Kelola Menu (Tambah Menu Baru)</h3>
+              <button type="button" id="cancel-edit-btn" onclick="resetMenuForm()" class="hidden text-xs text-rose-400 hover:underline font-semibold">
+                Batal Edit
+              </button>
+            </div>
+
+            <input type="hidden" id="menu-edit-id" />
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label for="menu-name" class="block text-xs font-semibold text-gray-300 mb-1.5">Nama Menu *</label>
+                <input type="text" id="menu-name" placeholder="Contoh: Kopi Susu Gula Aren" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+              </div>
+              <div>
+                <label for="menu-category" class="block text-xs font-semibold text-gray-300 mb-1.5">Kategori *</label>
+                <select id="menu-category" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+                  <option value="Kopi">Kopi</option>
+                  <option value="Non-Kopi">Non-Kopi</option>
+                  <option value="Makanan Berat">Makanan Berat</option>
+                  <option value="Camilan">Camilan</option>
+                  <option value="Bakaran">Bakaran</option>
+                  <option value="Kue & Dessert">Kue & Dessert</option>
+                </select>
+              </div>
+              <div>
+                <label for="menu-price" class="block text-xs font-semibold text-gray-300 mb-1.5">Harga (Rp) *</label>
+                <input type="number" id="menu-price" placeholder="18000" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+              </div>
+              <div>
+                <label for="menu-photo" class="block text-xs font-semibold text-gray-300 mb-1.5">URL Foto Produk (Sigmawire / Link Gambar)</label>
+                <input type="text" id="menu-photo" oninput="updateMenuPhotoPreview()" placeholder="Tempel URL foto atau unggah file..." class="w-full px-3.5 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+              </div>
+            </div>
+
+            <!-- Upload / Konversi Foto via Sigmawire -->
+            <div class="p-3.5 rounded-2xl bg-gray-900/90 border border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <img id="menu-photo-preview" src="data:image/svg+xml;utf8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27120%27 height=%2790%27 viewBox=%270 0 120 90%27%3E%3Crect width=%27120%27 height=%2790%27 fill=%27%231f2937%27/%3E%3Ctext x=%2760%27 y=%2749%27 fill=%27%23fbbf24%27 font-size=%2712%27 font-family=%27sans-serif%27 text-anchor=%27middle%27%3EPreview Foto%3C/text%3E%3C/svg%3E" alt="Preview Foto Menu" class="w-16 h-12 rounded-xl object-cover border border-gray-700 bg-gray-950 shrink-0">
+                <div class="min-w-0">
+                  <p class="text-xs font-bold text-gray-200">
+                    Konversi & Upload Foto via
+                    <a href="https://sigmawire.net/image-to-url-converter" target="_blank" rel="noopener noreferrer" class="text-amber-400 underline hover:text-amber-300">
+                      Sigmawire Image to URL Converter
+                    </a>
+                  </p>
+                  <p id="sigmawire-upload-status" class="text-[11px] text-gray-400 mt-0.5 break-words">
+                    Pilih foto untuk diunggah ke Sigmawire atau tempel link hasil konversi di kolom URL Foto Produk.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0 flex-wrap">
+                <input type="file" id="menu-photo-file" accept="image/*" class="hidden" onchange="handleSigmawirePhotoUpload(event)">
+                <button type="button" onclick="document.getElementById('menu-photo-file').click()" class="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-bold transition">
+                  Upload Foto ke Sigmawire
+                </button>
+                <a href="https://sigmawire.net/image-to-url-converter" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 text-xs font-bold transition">
+                  Buka Sigmawire
+                </a>
+              </div>
+            </div>
+
+            <!-- Tombol & Form Varian Opsional -->
+            <div class="pt-1">
+              <button type="button" id="btn-add-variant" onclick="enableVariantInput()" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-amber-400 border border-amber-500/30 text-xs font-bold transition">
+                Tambah Varian (Opsional)
+              </button>
+
+              <div id="variant-fields-wrapper" class="hidden mt-4 p-4 rounded-2xl bg-gray-900 border border-gray-800 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label for="var1-label" class="block text-xs font-semibold text-gray-300 mb-1">Nama Varian 1</label>
+                    <input type="text" id="var1-label" oninput="renderVariantPreview()" placeholder="Contoh: Ukuran atau Level Pedas" class="w-full px-3 py-2 rounded-xl bg-gray-950 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+                  </div>
+                  <div>
+                    <label for="var1-options" class="block text-xs font-semibold text-gray-300 mb-1">Pilihan Varian 1 (pisahkan koma)</label>
+                    <input type="text" id="var1-options" oninput="renderVariantPreview()" placeholder="Contoh: Regular, Large" class="w-full px-3 py-2 rounded-xl bg-gray-950 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+                  </div>
+                  <div>
+                    <label for="var2-label" class="block text-xs font-semibold text-gray-300 mb-1">Nama Varian 2</label>
+                    <input type="text" id="var2-label" oninput="renderVariantPreview()" placeholder="Contoh: Suhu atau Topping" class="w-full px-3 py-2 rounded-xl bg-gray-950 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+                  </div>
+                  <div>
+                    <label for="var2-options" class="block text-xs font-semibold text-gray-300 mb-1">Pilihan Varian 2 (pisahkan koma)</label>
+                    <input type="text" id="var2-options" oninput="renderVariantPreview()" placeholder="Contoh: Panas, Dingin" class="w-full px-3 py-2 rounded-xl bg-gray-950 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+                  </div>
+                </div>
+
+                <div>
+                  <span class="block text-xs font-semibold text-gray-400 mb-1.5">Pratinjau Pilihan Varian di Halaman Pembeli:</span>
+                  <div id="variant-preview-box" class="p-3 rounded-xl bg-gray-950 border border-gray-800 text-xs text-gray-500 italic">
+                    Belum ada varian diisi.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button type="button" id="save-menu-btn" onclick="saveMenuItem()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-extrabold text-sm transition shadow-lg shadow-emerald-500/20">
+                Simpan Menu Baru
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BAGIAN 3: BARCODE / QR CODE & LINK PEMBELI -->
+        <div id="sec-3" class="admin-section hidden space-y-4">
+          <div class="p-4 sm:p-5 rounded-2xl bg-gray-950/70 border border-gray-800">
+            <h3 class="text-sm sm:text-base font-bold text-white mb-4">Barcode / QR Code & Link Halaman Pembeli</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+              <div class="flex flex-col items-center justify-center p-5 rounded-2xl bg-white text-gray-950">
+                <div id="admin-qrcode-container" class="flex items-center justify-center"></div>
+                <p class="text-xs font-bold text-gray-700 mt-3">Scan untuk Buka Menu Pembeli</p>
+              </div>
+              <div class="space-y-3.5">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-400 mb-1">URL Halaman Pembeli (Tersinkron ke HP Lain)</label>
+                  <div id="qr-target-url-display" class="p-3 rounded-xl bg-gray-900 border border-gray-800 text-xs font-mono text-amber-400 break-all"></div>
+                </div>
+                <div class="flex flex-wrap gap-2.5">
+                  <button type="button" onclick="downloadQRCodeCard()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-bold text-xs sm:text-sm transition">
+                    Download QR Code (PNG)
+                  </button>
+                  <button type="button" onclick="copyCustomerLink()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs sm:text-sm border border-gray-700 transition">
+                    Salin Link Pembeli
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BAGIAN 4: EKSPOR / IMPOR DATA CADANGAN -->
+        <div id="sec-4" class="admin-section hidden space-y-4">
+          <div class="p-4 sm:p-5 rounded-2xl bg-gray-950/70 border border-gray-800 space-y-3.5">
+            <h3 class="text-sm sm:text-base font-bold text-white">Impor Data Cadangan</h3>
+            <p class="text-xs text-gray-400 leading-relaxed">Salin teks JSON di bawah untuk mencadangkan seluruh pengaturan, menu, dan pesanan, atau tempelkan kode JSON lalu klik Impor Data.</p>
+            <textarea id="export-import-box" rows="5" placeholder="Klik Ekspor Data untuk melihat kode cadangan atau tempelkan kode JSON di sini..." class="w-full p-3.5 rounded-xl bg-gray-900 border border-gray-700 text-emerald-300 font-mono text-xs focus:border-amber-500 focus:outline-none"></textarea>
+            <div class="flex flex-col sm:flex-row gap-2.5">
+              <button type="button" onclick="exportAllData()" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm transition">
+                Ekspor Data
+              </button>
+              <button type="button" onclick="copyExportedData()" class="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold text-xs sm:text-sm border border-gray-700 transition">
+                Salin Teks
+              </button>
+              <button type="button" onclick="importAllData()" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs sm:text-sm transition">
+                Impor Data
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KONTEN UTAMA ADMIN (TERPISAH PER HALAMAN TAB) -->
+    <main id="admin-main-content" class="max-w-5xl w-full mx-auto px-3.5 sm:px-4 py-5 sm:py-6 flex-1 space-y-6">
+
+      <!-- HALAMAN 1: DAFTAR SEMUA MENU -->
+      <section id="admin-page-menu" class="space-y-4">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div class="relative flex-1">
+            <input type="text" id="admin-search-input" oninput="renderAdminMenuList()" placeholder="Cari nama atau kategori menu di daftar..." class="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-900 border border-gray-800 text-sm text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none">
+            <svg class="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+            </svg>
+          </div>
+          <button type="button" onclick="openAddMenuQuick()" class="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-extrabold text-sm shadow-lg shadow-amber-500/20 transition shrink-0">
+            + Tambah Menu Baru
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-gray-400">
+            Daftar Semua Menu (<span id="admin-menu-count">0</span>)
+          </h2>
+          <div id="admin-menu-list" class="space-y-3"></div>
+        </div>
+      </section>
+
+      <!-- HALAMAN 2: PESANAN MASUK DARI PEMBELI -->
+      <section id="admin-page-orders" class="hidden space-y-4">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div class="relative flex-1">
+            <input type="text" id="admin-order-search-input" oninput="renderAdminOrdersList()" placeholder="Cari nama pembeli, jenis pesanan, menu, atau metode bayar..." class="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-900 border border-gray-800 text-sm text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none">
+            <svg class="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+            </svg>
+          </div>
+          <button type="button" id="clear-orders-btn" onclick="clearAllOrders()" class="hidden px-4 py-3 rounded-2xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 text-xs sm:text-sm font-bold transition shrink-0">
+            Bersihkan Riwayat
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-gray-400">
+            Pesanan Masuk dari Pembeli (<span id="admin-order-count">0</span>)
+          </h2>
+          <div id="admin-orders-list" class="space-y-3"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL PREVIEW BUKTI PEMBAYARAN ADMIN -->
+  <div id="admin-proof-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4" onclick="if(event.target===this)closeAdminProofModal()">
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="px-5 py-4 border-b border-gray-800 flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <h3 id="admin-proof-title" class="text-base font-extrabold text-white truncate">Bukti Pembayaran</h3>
+          <p id="admin-proof-subtitle" class="text-xs text-emerald-400 truncate">Terlampir pada pesanan</p>
+        </div>
+        <button type="button" onclick="closeAdminProofModal()" class="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold flex items-center justify-center shrink-0">✕</button>
+      </div>
+      <div class="p-5 overflow-y-auto flex-1 flex items-center justify-center bg-gray-950">
+        <img id="admin-proof-modal-img" src="" alt="Bukti Pembayaran Pembeli" class="max-h-[62vh] w-auto rounded-xl border border-gray-800 object-contain">
+      </div>
+      <div class="px-5 py-3.5 bg-gray-900 border-t border-gray-800 flex items-center justify-end gap-2">
+        <a id="admin-proof-download-link" href="#" download="bukti-pembayaran.png" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">
+          ⬇️ Unduh Gambar
+        </a>
+        <button type="button" onclick="closeAdminProofModal()" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold transition">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DETAIL PRODUK & VARIAN -->
+  <div id="product-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4" onclick="if(event.target===this)closeProductModal()">
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl max-w-md w-full overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="relative h-52 bg-gray-800 shrink-0">
+        <img id="modal-prod-img" src="" alt="" class="w-full h-full object-cover">
+        <button type="button" onclick="closeProductModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-950/80 text-white flex items-center justify-center text-sm font-bold hover:bg-gray-950">✕</button>
+        <span id="modal-prod-cat" class="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-gray-950/85 text-amber-400 text-xs font-bold"></span>
+      </div>
+
+      <div class="p-5 space-y-4 overflow-y-auto flex-1">
+        <div>
+          <h3 id="modal-prod-name" class="text-xl font-extrabold text-white"></h3>
+          <p id="modal-prod-price" class="text-lg font-bold text-amber-400 mt-0.5"></p>
+        </div>
+
+        <!-- Jumlah Pesanan -->
+        <div class="flex items-center justify-between py-2 border-y border-gray-800">
+          <span class="text-sm font-semibold text-gray-300">Jumlah Pesanan</span>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="changeModalQty(-1)" class="w-8 h-8 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold text-lg flex items-center justify-center">-</button>
+            <span id="modal-prod-qty" class="text-base font-extrabold w-6 text-center">1</span>
+            <button type="button" onclick="changeModalQty(1)" class="w-8 h-8 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-bold text-lg flex items-center justify-center">+</button>
+          </div>
+        </div>
+
+        <!-- Pilihan Varian Dinamis -->
+        <div id="modal-variants-container" class="space-y-3"></div>
+
+        <!-- Catatan Tambahan Opsional -->
+        <div>
+          <label for="modal-prod-note" class="block text-xs font-bold text-gray-300 mb-1.5">Catatan Tambahan (Opsional)</label>
+          <input type="text" id="modal-prod-note" placeholder="Contoh: Es sedikit, kurang gula, level pedas 2..." class="w-full px-3.5 py-2.5 rounded-xl bg-gray-950 border border-gray-700 text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none">
+        </div>
+      </div>
+
+      <div class="p-4 bg-gray-950/70 border-t border-gray-800 grid grid-cols-2 gap-3 shrink-0">
+        <button type="button" onclick="closeProductModal()" class="py-3 rounded-2xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold text-sm transition">
+          Batal
+        </button>
+        <button type="button" onclick="addSelectedToCart()" class="py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-gray-950 font-extrabold text-sm transition shadow-lg shadow-amber-500/20">
+          Masukkan ke Keranjang
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL KERANJANG & CHECKOUT -->
+  <div id="cart-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4" onclick="if(event.target===this)closeCartModal()">
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl max-h-[92vh] flex flex-col">
+      <div class="px-5 py-4 border-b border-gray-800 flex items-center justify-between shrink-0">
+        <h3 class="text-lg font-extrabold text-white">Keranjang & Informasi Pesanan</h3>
+        <button type="button" onclick="closeCartModal()" class="w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold flex items-center justify-center">✕</button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-5 flex-1">
+        <!-- Daftar Item Keranjang -->
+        <div id="cart-items-list" class="space-y-2.5"></div>
+
+        <!-- Form Informasi Pemesan -->
+        <div class="space-y-4 pt-2 border-t border-gray-800">
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-amber-400">Informasi Pesanan</h4>
+
+          <div>
+            <label for="order-customer-name" class="block text-xs font-bold text-gray-300 mb-1.5">1. Nama Lengkap Pemesan *</label>
+            <input type="text" id="order-customer-name" placeholder="Contoh: Budi Santoso" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-950 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-300 mb-1.5">2. Jenis Pesanan *</label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button type="button" id="btn-type-dinein" onclick="selectOrderType('Dine In')" class="py-2.5 px-2.5 rounded-xl text-xs font-bold border bg-amber-500 text-gray-950 border-amber-400 transition">
+                Makan di Tempat (Dine In)
+              </button>
+              <button type="button" id="btn-type-takeaway" onclick="selectOrderType('Take Away')" class="py-2.5 px-2.5 rounded-xl text-xs font-bold border bg-gray-950 text-gray-300 border-gray-700 hover:border-gray-500 transition">
+                Bawa Pulang (Take Away)
+              </button>
+              <button type="button" id="btn-type-delivery" onclick="selectOrderType('Delivery')" class="py-2.5 px-2.5 rounded-xl text-xs font-bold border bg-gray-950 text-gray-300 border-gray-700 hover:border-gray-500 transition">
+                Antar ke Alamat (Delivery)
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="order-table-number" class="block text-xs font-bold text-gray-300 mb-1.5">Kolom Nomor Meja</label>
+              <input type="text" id="order-table-number" placeholder="Contoh: 04 atau Meja No.04" class="w-full px-3.5 py-2.5 rounded-xl bg-gray-950 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+            </div>
+            <div>
+              <label for="order-address" class="block text-xs font-bold text-gray-300 mb-1.5">Keterangan</label>
+              <input type="text" id="order-address" disabled placeholder="Tidak perlu diisi (Dine In)" class="w-full px-3 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-950 placeholder-gray-600 text-xs sm:text-sm focus:border-amber-500 focus:outline-none">
+            </div>
+          </div>
+
+          <!-- 3. Metode Pembayaran -->
+          <div>
+            <label class="block text-xs font-bold text-gray-300 mb-1.5">3. Metode Pembayaran *</label>
+            <div class="grid grid-cols-2 gap-2.5">
+              <button type="button" id="btn-pay-tunai" onclick="selectPaymentMethod('Tunai')" class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border bg-amber-500 text-gray-950 border-amber-400 transition">
+                💵 Bayar Tunai
+              </button>
+              <button type="button" id="btn-pay-qris" onclick="selectPaymentMethod('QRIS / Transfer')" class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border bg-gray-950 text-gray-300 border-gray-700 hover:border-gray-500 transition">
+                📱 QRIS / Transfer
+              </button>
+            </div>
+          </div>
+
+          <!-- Panel Bayar Tunai -->
+          <div id="panel-pay-tunai" class="p-4 rounded-2xl bg-gray-950 border border-gray-800 space-y-3">
+            <div class="flex items-center justify-between text-xs sm:text-sm">
+              <span class="text-gray-400">Total Pembayaran:</span>
+              <span id="tunai-total-display" class="font-extrabold text-amber-400">Rp 0</span>
+            </div>
+            <div>
+              <label for="cash-paid-input" class="block text-xs font-semibold text-gray-300 mb-1">Uang Tunai Dibayarkan (Rp)</label>
+              <input type="number" id="cash-paid-input" oninput="calculateCashChange()" placeholder="Contoh: 50000" class="w-full px-3.5 py-2 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:border-amber-500 focus:outline-none">
+            </div>
+            <div class="flex items-center justify-between text-xs sm:text-sm pt-1 border-t border-gray-800/80">
+              <span class="text-gray-400">Kembalian:</span>
+              <span id="tunai-change-display" class="font-extrabold text-emerald-400">Rp 0</span>
+            </div>
+          </div>
+
+          <!-- Panel QRIS / Transfer -->
+          <div id="panel-pay-qris" class="hidden p-4 rounded-2xl bg-gray-950 border border-gray-800 space-y-3">
+            <p id="qris-payment-text" class="text-xs text-gray-300 leading-relaxed whitespace-pre-line"></p>
+            <div id="qris-image-wrapper" class="hidden flex flex-col items-center justify-center p-3 rounded-xl bg-white">
+              <img id="qris-image-display" src="" alt="QRIS Toko" class="max-h-52 object-contain">
+            </div>
+            <div class="flex items-center justify-between text-xs sm:text-sm pt-2 border-t border-gray-800">
+              <span class="text-gray-400">Total Pembayaran:</span>
+              <span id="qris-total-display" class="font-extrabold text-amber-400">Rp 0</span>
+            </div>
+            <div>
+              <label for="payment-proof-input" class="block text-xs font-semibold text-gray-300 mb-1">Unggah Bukti Pembayaran (Opsional)</label>
+              <input type="file" id="payment-proof-input" accept="image/*" onchange="handleProofUpload(event)" class="block w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-gray-800 file:text-amber-400 hover:file:bg-gray-700">
+
+              <div id="proof-preview-card" class="hidden mt-3 p-3 rounded-2xl bg-gray-900 border border-emerald-500/30 space-y-2.5">
+                <div class="flex items-center gap-3">
+                  <img id="proof-preview-img" src="" alt="Preview Bukti Pembayaran" class="w-16 h-16 rounded-xl object-cover border border-gray-700 bg-gray-950 shrink-0">
+                  <div class="min-w-0 flex-1">
+                    <p id="proof-file-name" class="text-xs font-bold text-emerald-300 truncate">bukti-pembayaran.png</p>
+                    <p id="proof-file-meta" class="text-[11px] text-gray-400 mt-0.5">Terlampir</p>
+                  </div>
+                  <button type="button" onclick="clearUploadedProof()" class="px-2.5 py-1 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 text-[11px] font-bold shrink-0 transition">
+                    Hapus
+                  </button>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button type="button" onclick="copyProofImageToClipboard()" class="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[11px] font-bold transition">
+                    📋 Salin Gambar Bukti
+                  </button>
+                  <button type="button" onclick="downloadProofImage()" class="px-3 py-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 text-[11px] font-bold transition">
+                    ⬇️ Simpan Gambar Bukti
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Checkout -->
+      <div class="p-4 bg-gray-950 border-t border-gray-800 space-y-3 shrink-0">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-bold text-gray-300">Total Pembayaran</span>
+          <span id="cart-grand-total" class="text-xl font-extrabold text-amber-400">Rp 0</span>
+        </div>
+        <button type="button" id="btn-submit-wa" onclick="submitOrderToWhatsApp()" class="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition">
+          <span id="btn-submit-wa-text">Bagikan ke WhatsApp</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
