@@ -18,65 +18,6 @@ const DEFAULT_ADMIN_CATEGORIES = [
   'Kue & Dessert'
 ];
 
-function getDefaultMenus() {
-  return [
-    {
-      id: 'MENU-DEFAULT-1',
-      name: 'Kopi Susu Gula Aren',
-      category: 'Kopi',
-      price: 18000,
-      photo: '',
-      variant1: { label: 'Suhu', options: ['Dingin', 'Panas'] },
-      variant2: { label: 'Ukuran', options: ['Regular', 'Large'] }
-    },
-    {
-      id: 'MENU-DEFAULT-2',
-      name: 'Es Teh Manis Nusantara',
-      category: 'Non-Kopi',
-      price: 8000,
-      photo: '',
-      variant1: { label: 'Gula', options: ['Normal', 'Less Sugar'] },
-      variant2: null
-    },
-    {
-      id: 'MENU-DEFAULT-3',
-      name: 'Nasi Goreng Kampung Spesial',
-      category: 'Makanan Berat',
-      price: 24000,
-      photo: '',
-      variant1: { label: 'Level Pedas', options: ['Tidak Pedas', 'Sedang', 'Pedas'] },
-      variant2: null
-    },
-    {
-      id: 'MENU-DEFAULT-4',
-      name: 'Kentang Goreng Crispy',
-      category: 'Camilan',
-      price: 15000,
-      photo: '',
-      variant1: { label: 'Bumbu', options: ['Original', 'Keju', 'Balado'] },
-      variant2: null
-    },
-    {
-      id: 'MENU-DEFAULT-5',
-      name: 'Sate Ayam Bakar Madu',
-      category: 'Bakaran',
-      price: 22000,
-      photo: '',
-      variant1: { label: 'Level Pedas', options: ['Manis', 'Pedas Manis', 'Pedas'] },
-      variant2: null
-    },
-    {
-      id: 'MENU-DEFAULT-6',
-      name: 'Brownies Coklat Lumer',
-      category: 'Kue & Dessert',
-      price: 16000,
-      photo: '',
-      variant1: { label: 'Topping', options: ['Choco Chips', 'Keju Parut'] },
-      variant2: null
-    }
-  ];
-}
-
 let appState = {
   settings: {
     storeName: 'Kedai Kuliner UMKM',
@@ -86,7 +27,7 @@ let appState = {
     qrisUrl: '',
     cloudBlobId: ''
   },
-  menus: getDefaultMenus(),
+  menus: [],
   orders: []
 };
 
@@ -671,8 +612,7 @@ function applyIncomingData(parsed, { persist = true, refreshView = true, isLiveU
   }
 
   if (Array.isArray(parsed.menus)) {
-    const normalized = normalizeMenusArray(parsed.menus);
-    appState.menus = normalized.length > 0 ? normalized : getDefaultMenus();
+    appState.menus = normalizeMenusArray(parsed.menus);
   }
   if (Array.isArray(parsed.orders)) {
     appState.orders = parsed.orders;
@@ -813,12 +753,12 @@ async function initApp() {
       applyIncomingData(parsed, { persist: false, refreshView: false, isLiveUpdate: false });
       hasLocalSavedState = true;
     } else {
-      appState.menus = getDefaultMenus();
+      appState.menus = [];
       saveStateToStorage({ broadcast: false, syncCloud: false });
     }
   } catch (e) {
     console.error('Gagal membaca data tersimpan:', e);
-    appState.menus = getDefaultMenus();
+    appState.menus = [];
   }
 
   if (encodedData) {
@@ -833,10 +773,6 @@ async function initApp() {
     } catch (err) {
       console.warn('Payload URL tidak valid, memakai data tersimpan.');
     }
-  }
-
-  if (!Array.isArray(appState.menus) || appState.menus.length === 0) {
-    appState.menus = getDefaultMenus();
   }
 
   setupCrossTabSync();
