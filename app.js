@@ -3,6 +3,7 @@ const STORE_PREFIX_KEY = 'umkm_kuliner_store_v1_';
 const SYNC_CHANNEL_NAME = 'umkm_kuliner_sync_channel_v1';
 const UNREAD_ORDERS_KEY = 'umkm_kuliner_unread_orders_v1';
 const BLOB_ID_STORAGE_PREFIX = 'umkm_kuliner_blob_id_v1_';
+const STORE_REGISTRY_BLOB_KEY = 'umkm_kuliner_store_registry_blob_v1';
 const DEFAULT_STORE_ID = 'KEDAI-KULINER-01';
 const JSONBLOB_API_BASE = 'https://jsonblob.com/api/jsonBlob';
 const SIGMAWIRE_CONVERTER_URL = 'https://sigmawire.net/image-to-url-converter';
@@ -17,6 +18,65 @@ const DEFAULT_ADMIN_CATEGORIES = [
   'Kue & Dessert'
 ];
 
+function getDefaultMenus() {
+  return [
+    {
+      id: 'MENU-DEFAULT-1',
+      name: 'Kopi Susu Gula Aren',
+      category: 'Kopi',
+      price: 18000,
+      photo: '',
+      variant1: { label: 'Suhu', options: ['Dingin', 'Panas'] },
+      variant2: { label: 'Ukuran', options: ['Regular', 'Large'] }
+    },
+    {
+      id: 'MENU-DEFAULT-2',
+      name: 'Es Teh Manis Nusantara',
+      category: 'Non-Kopi',
+      price: 8000,
+      photo: '',
+      variant1: { label: 'Gula', options: ['Normal', 'Less Sugar'] },
+      variant2: null
+    },
+    {
+      id: 'MENU-DEFAULT-3',
+      name: 'Nasi Goreng Kampung Spesial',
+      category: 'Makanan Berat',
+      price: 24000,
+      photo: '',
+      variant1: { label: 'Level Pedas', options: ['Tidak Pedas', 'Sedang', 'Pedas'] },
+      variant2: null
+    },
+    {
+      id: 'MENU-DEFAULT-4',
+      name: 'Kentang Goreng Crispy',
+      category: 'Camilan',
+      price: 15000,
+      photo: '',
+      variant1: { label: 'Bumbu', options: ['Original', 'Keju', 'Balado'] },
+      variant2: null
+    },
+    {
+      id: 'MENU-DEFAULT-5',
+      name: 'Sate Ayam Bakar Madu',
+      category: 'Bakaran',
+      price: 22000,
+      photo: '',
+      variant1: { label: 'Level Pedas', options: ['Manis', 'Pedas Manis', 'Pedas'] },
+      variant2: null
+    },
+    {
+      id: 'MENU-DEFAULT-6',
+      name: 'Brownies Coklat Lumer',
+      category: 'Kue & Dessert',
+      price: 16000,
+      photo: '',
+      variant1: { label: 'Topping', options: ['Choco Chips', 'Keju Parut'] },
+      variant2: null
+    }
+  ];
+}
+
 let appState = {
   settings: {
     storeName: 'Kedai Kuliner UMKM',
@@ -26,7 +86,7 @@ let appState = {
     qrisUrl: '',
     cloudBlobId: ''
   },
-  menus: [],
+  menus: getDefaultMenus(),
   orders: []
 };
 
@@ -144,9 +204,27 @@ function saveBlobId(storeId, blobId) {
   const cleanId = sanitizeStoreId(storeId || getActiveStoreId());
   const cleanBlobId = String(blobId || '').trim();
   if (!cleanBlobId) return;
-  appState.settings.cloudBlobId = cleanBlobId;
+  if (cleanId === getActiveStoreId()) {
+    appState.settings.cloudBlobId = cleanBlobId;
+  }
   try {
     localStorage.setItem(getBlobIdStorageKey(cleanId), cleanBlobId);
+  } catch (e) {}
+}
+
+function getRegistryBlobId() {
+  try {
+    return String(localStorage.getItem(STORE_REGISTRY_BLOB_KEY) || '').trim();
+  } catch (e) {
+    return '';
+  }
+}
+
+function saveRegistryBlobId(regBlobId) {
+  const clean = String(regBlobId || '').trim();
+  if (!clean) return;
+  try {
+    localStorage.setItem(STORE_REGISTRY_BLOB_KEY, clean);
   } catch (e) {}
 }
 
@@ -424,38 +502,6 @@ function buildSyncPayload(storeId, sourceState = appState) {
   };
 }
 
-function encodeSharePayload(payload) {
-  try {
-    const compactMenus = normalizeMenusArray(payload.menus || []).slice(0, 8).map((m) => ({
-      id: m.id,
-      name: String(m.name || '').slice(0, 35),
-      category: String(m.category || '').slice(0, 20),
-      price: Number(m.price) || 0,
-      photo: (m.photo && !m.photo.startsWith('data:') && m.photo.length < 100) ? m.photo : '',
-      variant1: m.variant1,
-      variant2: m.variant2
-    }));
-
-    const compact = {
-      settings: {
-        storeName: String(payload.settings?.storeName || 'Kedai Kuliner UMKM').slice(0, 35),
-        storeId: sanitizeStoreId(payload.settings?.storeId || DEFAULT_STORE_ID),
-        whatsapp: String(payload.settings?.whatsapp || '087877611218').slice(0, 20),
-        paymentInfo: String(payload.settings?.paymentInfo || '').slice(0, 80),
-        qrisUrl: (payload.settings?.qrisUrl && !payload.settings.qrisUrl.startsWith('data:') && payload.settings.qrisUrl.length < 100)
-          ? payload.settings.qrisUrl
-          : ''
-      },
-      menus: compactMenus
-    };
-    const jsonStr = JSON.stringify(compact);
-    if (jsonStr.length > 900) return '';
-    return btoa(unescape(encodeURIComponent(jsonStr)));
-  } catch (e) {
-    return '';
-  }
-}
-
 async function ensureCloudBlobId(storeId, payload) {
   const cleanId = sanitizeStoreId(storeId || getActiveStoreId());
   const existingBlobId = getSavedBlobId(cleanId);
@@ -477,11 +523,67 @@ async function ensureCloudBlobId(storeId, payload) {
     if (createdId) {
       saveBlobId(cleanId, createdId);
       payload.settings.cloudBlobId = createdId;
+      await registerStoreBlobInCloud(cleanId, createdId);
     }
     return createdId;
   } catch (err) {
     return '';
   }
+}
+
+async function registerStoreBlobInCloud(storeId, blobId) {
+  const cleanStoreId = sanitizeStoreId(storeId);
+  const cleanBlobId = String(blobId || '').trim();
+  if (!cleanStoreId || !cleanBlobId) return;
+
+  try {
+    let regBlobId = getRegistryBlobId();
+    let registryMap = {};
+
+    if (regBlobId) {
+      const getRes = await fetch(`${JSONBLOB_API_BASE}/${regBlobId}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store'
+      });
+      if (getRes.ok) {
+        const currentReg = await getRes.json();
+        if (currentReg && typeof currentReg === 'object') {
+          registryMap = { ...currentReg };
+        }
+      }
+    }
+
+    registryMap[cleanStoreId] = cleanBlobId;
+
+    if (!regBlobId) {
+      const postRes = await fetch(JSONBLOB_API_BASE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(registryMap)
+      });
+      if (postRes.ok) {
+        const loc = postRes.headers.get('X-JsonBlob-Id') || postRes.headers.get('Location') || '';
+        const match = String(loc).match(/([a-zA-Z0-9_-]{10,})$/);
+        if (match && match[1]) {
+          regBlobId = match[1];
+          saveRegistryBlobId(regBlobId);
+        }
+      }
+    } else {
+      await fetch(`${JSONBLOB_API_BASE}/${regBlobId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(registryMap)
+      });
+    }
+  } catch (e) {}
 }
 
 async function pushStoreToCloud(storeId, sourceState = appState) {
@@ -501,6 +603,7 @@ async function pushStoreToCloud(storeId, sourceState = appState) {
       },
       body: JSON.stringify(payload)
     });
+    await registerStoreBlobInCloud(cleanId, blobId);
   } catch (err) {
     console.warn('Sinkron cloud tertunda:', err);
   } finally {
@@ -510,7 +613,28 @@ async function pushStoreToCloud(storeId, sourceState = appState) {
 
 async function pullStoreFromCloud(storeId) {
   const cleanId = sanitizeStoreId(storeId || getActiveStoreId());
-  const blobId = getSavedBlobId(cleanId);
+  let blobId = getSavedBlobId(cleanId);
+
+  if (!blobId) {
+    const regBlobId = getRegistryBlobId();
+    if (regBlobId) {
+      try {
+        const regRes = await fetch(`${JSONBLOB_API_BASE}/${regBlobId}`, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store'
+        });
+        if (regRes.ok) {
+          const regData = await regRes.json();
+          if (regData && regData[cleanId]) {
+            blobId = String(regData[cleanId]).trim();
+            saveBlobId(cleanId, blobId);
+          }
+        }
+      } catch (e) {}
+    }
+  }
+
   if (!blobId) return null;
 
   try {
@@ -547,7 +671,8 @@ function applyIncomingData(parsed, { persist = true, refreshView = true, isLiveU
   }
 
   if (Array.isArray(parsed.menus)) {
-    appState.menus = normalizeMenusArray(parsed.menus);
+    const normalized = normalizeMenusArray(parsed.menus);
+    appState.menus = normalized.length > 0 ? normalized : getDefaultMenus();
   }
   if (Array.isArray(parsed.orders)) {
     appState.orders = parsed.orders;
@@ -666,6 +791,7 @@ async function initApp() {
   const urlParams = new URLSearchParams(window.location.search);
   const queryStoreId = String(urlParams.get('store') || '').trim();
   const queryBlobId = String(urlParams.get('blob') || '').trim();
+  const queryRegBlobId = String(urlParams.get('reg') || '').trim();
   const encodedData = String(urlParams.get('d') || '').trim();
 
   const initialStoreId = queryStoreId ? sanitizeStoreId(queryStoreId) : DEFAULT_STORE_ID;
@@ -673,6 +799,9 @@ async function initApp() {
 
   if (queryBlobId) {
     saveBlobId(initialStoreId, queryBlobId);
+  }
+  if (queryRegBlobId) {
+    saveRegistryBlobId(queryRegBlobId);
   }
 
   let hasLocalSavedState = false;
@@ -684,10 +813,12 @@ async function initApp() {
       applyIncomingData(parsed, { persist: false, refreshView: false, isLiveUpdate: false });
       hasLocalSavedState = true;
     } else {
+      appState.menus = getDefaultMenus();
       saveStateToStorage({ broadcast: false, syncCloud: false });
     }
   } catch (e) {
     console.error('Gagal membaca data tersimpan:', e);
+    appState.menus = getDefaultMenus();
   }
 
   if (encodedData) {
@@ -702,6 +833,10 @@ async function initApp() {
     } catch (err) {
       console.warn('Payload URL tidak valid, memakai data tersimpan.');
     }
+  }
+
+  if (!Array.isArray(appState.menus) || appState.menus.length === 0) {
+    appState.menus = getDefaultMenus();
   }
 
   setupCrossTabSync();
@@ -1437,21 +1572,15 @@ function buildCustomerShareUrl() {
   const storeId = getActiveStoreId();
   const isHttp = /^https?:$/i.test(window.location.protocol);
   const baseFolder = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-  const rootUrl = isHttp ? `${window.location.origin}${baseFolder}` : 'https://menu.kuliner.local/';
+  const rootUrl = isHttp ? `${window.location.origin}${baseFolder}` : 'https://aplikasi-dompet-usaha-umkm.vercel.app/';
   const blobId = getSavedBlobId(storeId);
+  const regBlobId = getRegistryBlobId();
 
   const query = new URLSearchParams({ store: storeId });
   if (blobId) query.set('blob', blobId);
+  if (regBlobId) query.set('reg', regBlobId);
 
-  const candidateUrl = `${rootUrl}?${query.toString()}`;
-  if (candidateUrl.length <= 160) {
-    return candidateUrl;
-  }
-
-  const shortStore = sanitizeStoreId(storeId).slice(0, 18);
-  const shortQuery = new URLSearchParams({ store: shortStore });
-  if (blobId) shortQuery.set('blob', blobId.slice(0, 24));
-  return `${rootUrl}?${shortQuery.toString()}`;
+  return `${rootUrl}?${query.toString()}`;
 }
 
 function generateAdminQRCode({ syncCloud = true } = {}) {
